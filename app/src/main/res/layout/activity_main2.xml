@@ -32,6 +32,7 @@
         android:rowCount="2">
 
         <LinearLayout
+            android:id="@+id/LL"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_row="0"
@@ -52,21 +53,21 @@
                 android:layout_height="wrap_content"
 
                 android:layout_centerHorizontal="true"
+                android:layout_marginBottom="70dp"
                 android:text="Scan Your Fingerprint for Attendance"
                 android:textColor="@color/white"
-                android:layout_marginBottom="70dp"
                 android:textSize="17dp" />
 
             <Button
+                android:id="@+id/biometric_Attendance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/round"
-                android:text="Cancel"
-               android:textColor="@color/purple_200"
-                android:textStyle="bold"
                 android:layout_margin="8dp"
                 android:layout_marginTop="50dp"
-                 />
+                android:background="@drawable/round"
+                android:text="Give Attendance"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
