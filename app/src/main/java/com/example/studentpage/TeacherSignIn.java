@@ -7,11 +7,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Objects;
 
 public class TeacherSignIn extends AppCompatActivity {
 
@@ -35,7 +40,10 @@ public class TeacherSignIn extends AppCompatActivity {
             public void onClick(View view) {
                 String email= teacher_email.getText().toString();
                 String password=teacher_password.getText().toString();
-                teacherLogin(email,password);
+
+                    teacherLogin(email,password);
+
+
             }
         });
 
@@ -43,14 +51,23 @@ public class TeacherSignIn extends AppCompatActivity {
     }
 
     private void teacherLogin(String email, String password) {
-        auth.signInWithEmailAndPassword(email,password).addOnSuccessListener(TeacherSignIn.this, new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
+        auth.signInWithEmailAndPassword(email,password).addOnSuccessListener(TeacherSignIn.this, authResult -> {
+
+            if(Objects.equals(Objects.requireNonNull(authResult.getUser()).getEmail(), "admin@gmail.com")){
                 Intent intent = new Intent(TeacherSignIn.this,TeacherMain.class);
                 startActivity(intent);
                 Toast.makeText(TeacherSignIn.this, "Login Successfull", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(TeacherSignIn.this, "Wrong Credentials", Toast.LENGTH_SHORT).show();
+
             }
 
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(TeacherSignIn.this, "Wrong Credentials", Toast.LENGTH_SHORT).show();
+
+            }
         });
 
     }

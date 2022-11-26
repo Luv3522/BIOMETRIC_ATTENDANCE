@@ -28,6 +28,7 @@ public class StudentSignIn extends AppCompatActivity {
         stu_password= findViewById(R.id.et_password);
         button=findViewById(R.id.button1);
         auth = FirebaseAuth.getInstance();
+
         button.setOnClickListener(view -> {
             String email=stu_email.getText().toString();
             String password=stu_password.getText().toString();

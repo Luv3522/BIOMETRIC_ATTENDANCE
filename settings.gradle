@@ -10,3 +10,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "StudentPage"
 include ':app'
+include ':app:libs'
