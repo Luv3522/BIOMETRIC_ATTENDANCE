@@ -175,7 +175,7 @@ public class add_student extends AppCompatActivity {
 
             session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
                 protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication("20ucs072@lnmiit.ac.in","gautam@kr" );
+                    return new PasswordAuthentication("20ucs072@lnmiit.ac.in","******" );
 
                 }
             });
