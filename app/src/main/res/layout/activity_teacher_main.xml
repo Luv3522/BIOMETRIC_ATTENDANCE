@@ -94,12 +94,12 @@
                     android:src="@drawable/fingerprint"/>
 
                 <TextView
-                    android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="FINGERPRINT"
-                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"
+                    android:text="Attendance timer"
                     android:textAlignment="center"
+                    android:textColor="@color/black"
                     android:textSize="20dp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -132,12 +132,12 @@
                     android:src="@drawable/attendance" />
 
                 <TextView
-                    android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MY\nATTENDANCE"
-                    android:textColor="@color/black"
+                    android:layout_marginTop="10dp"
+                    android:text="Student\nSummary"
                     android:textAlignment="center"
+                    android:textColor="@color/black"
                     android:textSize="20dp"
                     android:textStyle="bold" />
             </LinearLayout>

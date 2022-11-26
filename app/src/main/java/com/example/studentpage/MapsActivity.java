@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -17,7 +18,6 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -25,21 +25,38 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.studentpage.databinding.ActivityMapsBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleMap.OnMapLongClickListener {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
-
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
     private static final String TAG = "MapsActivity";
 
 
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
 
-    private float GEOFENCE_RADIUS = 20;
+    private float GEOFENCE_RADIUS = 10;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID";
 
     private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
@@ -58,9 +75,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
+
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
     }
+
+
 
     /**
      * Manipulates the map once available.
@@ -74,15 +94,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        auth=FirebaseAuth.getInstance();
+        db=FirebaseFirestore.getInstance();
 
-        // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        if(Objects.equals(Objects.requireNonNull(auth.getCurrentUser()).getEmail(), "admin@gmail.com")){
 
+            mMap.setOnMapLongClickListener(this);
+
+        }
+        getData();
         enableUserLocation();
 
-        mMap.setOnMapLongClickListener(this);
     }
 
     private void enableUserLocation() {
@@ -158,6 +180,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void handleMapLongClick(LatLng latLng) {
         mMap.clear();
+//        List<LatLng> latLngList=new ArrayList<>();
+//        latLngList.add(latLng);
+        DocumentReference geofenceLocation=db.collection("geofence").document("geofenceLatLong");
+        geofenceLocation.update("latlong",latLng).addOnSuccessListener(unused -> Log.d(TAG,"LatLong successfully updted")).addOnFailureListener(e -> Log.w(TAG, "Error updating document",e));
+
+
         addMarker(latLng);
         addCircle(latLng, GEOFENCE_RADIUS);
         addGeofence(latLng, GEOFENCE_RADIUS);
@@ -208,4 +236,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         circleOptions.strokeWidth(4);
         mMap.addCircle(circleOptions);
     }
+    private void getData() {
+//        final boolean[] value = new boolean[1];
+//        final CollectionReference geo = db.collection("geofence");
+//        geo.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                if (task.isSuccessful()) {
+//                    for (QueryDocumentSnapshot document : task.getResult()) {
+////                        Log.i(TAG,document.getData().get("geofenceLatLong").toString());
+//                        GeoPoint geoPoint = document.getGeoPoint("geofenceLatLong");
+////                        assert geoPoint != null;
+//                        double lat = geoPoint.getLatitude();
+//                        double lng = geoPoint.getLongitude();
+//                        LatLng latLng = new LatLng(lat, lng);
+//                        addMarker(latLng);
+//                        addCircle(latLng, GEOFENCE_RADIUS);
+//                        addGeofence(latLng, GEOFENCE_RADIUS);
+//                    }
+//                } else {
+//                    Log.w(TAG, "Error getting documents.", task.getException());
+//                }
+//            }
+//        });
+        DocumentReference docRef = db.collection("geofence").document("geofenceLatLong");
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null) {
+//                    Map<String, Double> items= new HashMap<>();
+                    Map<String,Double> latlng = (Map<String, Double>) document.get("latlong");
+                    assert latlng != null;
+                    Double lat=latlng.get("latitude");
+                    Double lng =latlng.get("longitude");
+                    LatLng latLng= new LatLng(lat,lng);
+
+
+
+//                    LatLng latLng = new LatLng(lat, lng);
+                    addMarker(latLng);
+                    addCircle(latLng, GEOFENCE_RADIUS);
+                    addGeofence(latLng, GEOFENCE_RADIUS);
+//                        Log.i("LOGGER","First "+document.getString("first"));
+//                        Log.i("LOGGER","Last "+document.getString("last"));
+//                        Log.i("LOGGER","Born "+document.getString("born"));
+                } else {
+                    Log.d("LOGGER", "No such document");
+                }
+            } else {
+                Log.d("LOGGER", "get failed with ", task.getException());
+            }
+        });
+
+    }
+
 }

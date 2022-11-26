@@ -1,5 +1,7 @@
 package com.example.studentpage;
 
+//import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -29,8 +31,21 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 public class add_student extends AppCompatActivity {
     private static final String TAG = "";
@@ -55,8 +70,11 @@ public class add_student extends AppCompatActivity {
             String name_st=name.getText().toString();
             String email_st=email.getText().toString();
             String password_st=password.getText().toString();
+            Sendmail sm= new Sendmail();
+            sm.execute();
             insertStudent(name_st,email_st);
             AddStudent(name_st,email_st,password_st);
+
 //            insertStudent(name_st,email_st);
             name.setText("");
             email.setText("");
@@ -72,42 +90,33 @@ public class add_student extends AppCompatActivity {
 
 
         Query query = newdetailRef.whereEqualTo("email", email);
-        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
-                    for(DocumentSnapshot documentSnapshot : task.getResult()){
-                        String email = documentSnapshot.getString("email");
+        query.get().addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                for(DocumentSnapshot documentSnapshot : task.getResult()){
+                    String email1 = documentSnapshot.getString("email");
 
-                        if(email.equals(email)){
-                            Log.d(TAG, "User Exists");
-                            Toast.makeText(add_student.this, "Email exists", Toast.LENGTH_SHORT).show();
-                        }
+                    if(email1.equals(email1)){
+                        Log.d(TAG, "User Exists");
+                        Toast.makeText(add_student.this, "Email exists", Toast.LENGTH_SHORT).show();
                     }
                 }
+            }
 
-                if(task.getResult().size() == 0 ){
-                    Log.d(TAG, "Email does not Exists");
-                    //You can store new user information here
-                    Map<String,String> items= new HashMap<>();
-                    items.put("name",name);
-                    items.put("email",email);
-                    newdetailRef.add(items).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Toast.makeText(add_student.this, "Data Added", Toast.LENGTH_SHORT).show();
+            if(task.getResult().size() == 0 ){
+                Log.d(TAG, "Email does not Exists");
+                //You can store new user information here
+                Map<String,String> items= new HashMap<>();
+                items.put("name",name);
+                items.put("email",email);
+                newdetailRef.add(items).addOnSuccessListener(documentReference -> Toast.makeText(add_student.this, "Data Added", Toast.LENGTH_SHORT).show()).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(add_student.this, "Failed to ADD", Toast.LENGTH_SHORT).show();
 
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(add_student.this, "Failed to ADD", Toast.LENGTH_SHORT).show();
-
-                        }
-                    });
+                    }
+                });
 
 
-                }
             }
         });
 
@@ -125,7 +134,7 @@ public class add_student extends AppCompatActivity {
                         Log.d("success", "createUserWithEmail:success");
                         Toast.makeText(add_student.this, "STUDENT SUCCESSFULLY ADDED.",
                                 Toast.LENGTH_SHORT).show();
-//                        FirebaseUser user = auth.getCurrentUser();
+//
 
 
 
@@ -149,5 +158,53 @@ public class add_student extends AppCompatActivity {
 
                     }
                 });
+    }
+    public class Sendmail extends AsyncTask {
+        private Session session;
+
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+
+            Properties props = new Properties();
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.socketFactory.port", "465");
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.port", "465");
+
+            session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+                protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication("20ucs072@lnmiit.ac.in","gautam@kr" );
+
+                }
+            });
+
+
+            //Step 2 : compose the message [text,multi media]
+
+            Log.d("Test","here");
+            try {
+                MimeMessage msg = new MimeMessage(session);
+
+                msg.setFrom(new InternetAddress("20ucs072@lnmiit.ac.in"));
+                msg.addRecipient(Message.RecipientType.TO, new InternetAddress("20ucs129@lnmiit.ac.in"));
+                msg.setSubject("Login Credentials");
+
+                Multipart emailContent = new MimeMultipart();
+
+                //Text body part
+                MimeBodyPart textBodyPart = new MimeBodyPart();
+                textBodyPart.setText("Email: "+email.getText().toString()+"\nPassword: "+password.getText().toString());
+                emailContent.addBodyPart(textBodyPart);
+                msg.setContent(emailContent);
+                Transport.send(msg);
+
+            } catch (MessagingException e) {
+                e.printStackTrace();
+
+            }
+            return null;
+        }
     }
 }

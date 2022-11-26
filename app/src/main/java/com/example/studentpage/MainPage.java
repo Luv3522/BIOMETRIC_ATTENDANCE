@@ -5,18 +5,37 @@ import androidx.cardview.widget.CardView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Objects;
+
 public class MainPage extends AppCompatActivity {
     private LinearLayout student;
     private LinearLayout teacher;
-
+    FirebaseAuth auth;
+    FirebaseUser user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
+        getSupportActionBar().hide();
+//        auth=FirebaseAuth.getInstance();
+//        user= auth.getCurrentUser();
+//        assert user != null;
+//        Log.d("imad", String.valueOf(user.getEmail()));
+//        if(Objects.equals(user.getEmail(), "admin@gmail.com"))
+//        {
+//            startActivity(new Intent (MainPage.this,TeacherMain.class));
+//        }else if(user!=null){
+//            startActivity(new Intent (MainPage.this,MainActivity.class));
+//        }
+//        finish();
 
         student= findViewById(R.id.studentl);
         teacher=findViewById(R.id.teacherl);
